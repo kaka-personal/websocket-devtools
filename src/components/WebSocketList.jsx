@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CheckCircle, XCircle, Trash2, Plus, Activity, Loader, AppWindow } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, Plus, Activity, Loader, AppWindow, AlertTriangle, Ban, Play } from "lucide-react";
 import { filterConnections } from "../utils/filterUtils";
 import useConnectionNewMessage from "../hooks/useConnectionNewMessage";
 import ManualConnectModal from "./ManualConnectModal";
@@ -14,6 +14,8 @@ const WebSocketList = ({
   onClearConnections,
   onManualConnect, // New: manual connection callback
   onSetConnectionClosing, // New: callback to set connection to closing status
+  onIgnoreConnection, // New: ignore high-traffic connection
+  onUnignoreConnection, // New: unignore connection
 }) => {
   const [activeCollapsed, setActiveCollapsed] = useState(false); // Active connections collapsed state
   const [inactiveCollapsed, setInactiveCollapsed] = useState(false); // Inactive connections collapsed state
@@ -51,10 +53,11 @@ const WebSocketList = ({
   const uniqueConnections =
     connectionsMap && connectionsMap.size > 0
       ? Array.from(connectionsMap.values()).map((connInfo) => {
-          const messageCount = websocketEvents
-            .filter(
-              (event) => event.id === connInfo.id && event.type === "message"
-            )
+          const connectionEvents = websocketEvents.filter(
+            (event) => event.id === connInfo.id && event.type === "message"
+          );
+          
+          const messageCount = connectionEvents
             .filter(
               (msg, index, arr) =>
                 arr.findIndex(
@@ -64,6 +67,41 @@ const WebSocketList = ({
                     m.direction === msg.direction
                 ) === index
             ).length;
+
+          // Calculate traffic level and status
+          const recentEvents = connectionEvents.filter(
+            event => Date.now() - event.timestamp < 1000 // Last 1 second
+          );
+          const messagesPerSecond = recentEvents.length;
+          
+          let trafficLevel = "normal";
+          let isIgnored = false;
+          
+          // Check for traffic level indicators in recent events
+          const latestEvent = connectionEvents[connectionEvents.length - 1];
+          if (latestEvent) {
+            trafficLevel = latestEvent.trafficLevel || "normal";
+            if (latestEvent.messagesPerSecond) {
+              if (latestEvent.messagesPerSecond > 500) trafficLevel = "extreme";
+              else if (latestEvent.messagesPerSecond > 100) trafficLevel = "high";
+            }
+          }
+          
+          // Check for ignored status
+          const ignoredEvents = websocketEvents.filter(
+            event => event.id === connInfo.id && 
+            (event.type === "connection-ignored" || event.type === "connection-auto-ignored")
+          );
+          const unignoredEvents = websocketEvents.filter(
+            event => event.id === connInfo.id && event.type === "connection-unignored"
+          );
+          
+          if (ignoredEvents.length > 0) {
+            const lastIgnored = Math.max(...ignoredEvents.map(e => e.timestamp));
+            const lastUnignored = unignoredEvents.length > 0 ? 
+              Math.max(...unignoredEvents.map(e => e.timestamp)) : 0;
+            isIgnored = lastIgnored > lastUnignored;
+          }
 
           const lastActivity = Math.max(
             connInfo.lastActivity,
@@ -87,6 +125,9 @@ const WebSocketList = ({
             messageCount,
             lastActivity,
             frameContext: connInfo.frameContext, // Preserve iframe context information
+            trafficLevel,
+            messagesPerSecond,
+            isIgnored,
           };
         })
       : [];
@@ -161,6 +202,34 @@ const WebSocketList = ({
       });
     };
 
+    // Ignore connection
+    const handleIgnoreConnection = (e) => {
+      e.stopPropagation();
+      onIgnoreConnection && onIgnoreConnection(connection.id);
+    };
+
+    // Unignore connection
+    const handleUnignoreConnection = (e) => {
+      e.stopPropagation();
+      onUnignoreConnection && onUnignoreConnection(connection.id);
+    };
+
+    // Get traffic status icon and color
+    const getTrafficStatusIcon = () => {
+      if (connection.isIgnored) {
+        return <Ban size={12} color="#ef4444" title="Connection ignored due to high traffic" />;
+      }
+      
+      switch (connection.trafficLevel) {
+        case "extreme":
+          return <AlertTriangle size={12} color="#ef4444" title={`Extreme traffic: ${connection.messagesPerSecond} msg/s`} />;
+        case "high":
+          return <AlertTriangle size={12} color="#f59e0b" title={`High traffic: ${connection.messagesPerSecond} msg/s`} />;
+        default:
+          return null;
+      }
+    };
+
     // Helper function to get connection item class name
     const getConnectionItemClassName = () => {
       let className = 'ws-connection-item';
@@ -173,6 +242,15 @@ const WebSocketList = ({
       
       if (isActive) {
         className += ' active';
+      }
+      
+      // Add traffic status classes
+      if (connection.isIgnored) {
+        className += ' traffic-ignored';
+      } else if (connection.trafficLevel === "extreme") {
+        className += ' traffic-extreme';
+      } else if (connection.trafficLevel === "high") {
+        className += ' traffic-high';
       }
       
       return className;
@@ -237,6 +315,23 @@ const WebSocketList = ({
               />
             </div>
           </button>
+          {/* Traffic status and controls */}
+          <div className="ws-connection-traffic-controls">
+            {getTrafficStatusIcon()}
+            
+            {/* Ignore/Unignore button for high traffic connections */}
+            {(connection.trafficLevel === "high" || connection.trafficLevel === "extreme" || connection.isIgnored) && (
+              <button
+                className="ws-connection-traffic-btn"
+                onClick={connection.isIgnored ? handleUnignoreConnection : handleIgnoreConnection}
+                title={connection.isIgnored ? "Resume monitoring this connection" : "Ignore this high-traffic connection"}
+                tabIndex={-1}
+              >
+                {connection.isIgnored ? <Play size={12} color="#10b981" /> : <Ban size={12} color="#ef4444" />}
+              </button>
+            )}
+          </div>
+
           {/* Top-right close button, only render when active, show on hover */}
           {isActive && (
             <button

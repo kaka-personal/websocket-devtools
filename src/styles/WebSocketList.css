@@ -1046,3 +1046,60 @@
   background: rgba(255, 255, 255, 0.1);
   margin: 16px 0;
 }
+
+/* ===== Traffic Control Styles ===== */
+
+.ws-connection-traffic-controls {
+  position: absolute;
+  top: 8px;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.ws-connection-item:hover .ws-connection-traffic-controls {
+  opacity: 1;
+}
+
+.ws-connection-traffic-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ws-connection-traffic-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+/* Traffic level indicators */
+.ws-connection-item.traffic-high {
+  border-left: 3px solid #f59e0b;
+}
+
+.ws-connection-item.traffic-extreme {
+  border-left: 3px solid #ef4444;
+}
+
+.ws-connection-item.traffic-ignored {
+  opacity: 0.6;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.ws-connection-item.traffic-ignored .ws-connection-url {
+  text-decoration: line-through;
+}
+
+/* Adjust close button position to make room for traffic controls */
+.ws-connection-close-btn {
+  right: 8px;
+}

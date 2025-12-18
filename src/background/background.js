@@ -148,6 +148,42 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
     }
 
+    case "websocket-event-batch": {
+      // Handle batched WebSocket events
+      if (!sender.tab?.id) {
+        sendResponse({ received: false, reason: "missing-tabId" });
+        break;
+      }
+
+      const batchData = message.data;
+      if (!batchData || !Array.isArray(batchData)) {
+        sendResponse({ received: false, reason: "invalid-batch-data" });
+        break;
+      }
+
+      // Process each event in the batch
+      batchData.forEach(eventData => {
+        // Add tabId to each event
+        eventData.tabId = sender.tab.id;
+        
+        // Store connection data
+        websocketData.connections.push(eventData);
+      });
+
+      // Forward batch to DevTools Panel
+      const batchMessage = {
+        type: "websocket-event-batch",
+        data: batchData,
+        tabId: sender.tab.id,
+        timestamp: message.timestamp || Date.now(),
+        source: message.source
+      };
+      
+      forwardToDevTools(batchMessage);
+      sendResponse({ received: true, batchSize: batchData.length });
+      break;
+    }
+
     case "proxy-state-change": {
       // Forward state change to DevTools Panel
       forwardToDevTools(message);
@@ -283,29 +319,81 @@ function forwardToDevTools(message) {
   }
 }
 
+// Track tab URLs to detect real page navigation vs URL changes
+const tabUrls = new Map(); // tabId -> { url, lastUpdate }
+
 // Listen for tab updates, detect page refresh/navigation
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  // When page starts loading (refresh or navigation), clear connection data for this tab
-  if (changeInfo.status === "loading") {
-    // Clear connection data for this tab
-    const originalCount = websocketData.connections.length;
-    websocketData.connections = websocketData.connections.filter(conn => conn.tabId !== tabId);
+  // When page starts loading (refresh or navigation), check if it's a real navigation
+  if (changeInfo.status === "loading" && changeInfo.url) {
+    const currentUrl = changeInfo.url;
+    const previousData = tabUrls.get(tabId);
     
-    // Always notify DevTools panel about page refresh, even if no connections to clear
-    // This ensures the panel can reset its state properly
-    forwardToDevTools({
-      type: "page-refresh",
-      data: {
-        tabId: tabId,
-        timestamp: Date.now(),
-        removedConnections: originalCount - websocketData.connections.length,
-      },
+    // Extract base URL without query parameters and hash
+    const getBaseUrl = (url) => {
+      try {
+        const urlObj = new URL(url);
+        return `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
+      } catch (e) {
+        return url;
+      }
+    };
+    
+    const currentBaseUrl = getBaseUrl(currentUrl);
+    const previousBaseUrl = previousData ? getBaseUrl(previousData.url) : null;
+    
+    // Only clear connections if this is a real navigation (base URL changed)
+    // or if it's the first time we see this tab
+    const isRealNavigation = !previousData || currentBaseUrl !== previousBaseUrl;
+    
+    if (isRealNavigation) {
+      console.log(`[WebSocket Proxy] Real navigation detected for tab ${tabId}: ${previousBaseUrl} -> ${currentBaseUrl}`);
+      
+      // Clear connection data for this tab
+      const originalCount = websocketData.connections.length;
+      websocketData.connections = websocketData.connections.filter(conn => conn.tabId !== tabId);
+      
+      // Always notify DevTools panel about page refresh, even if no connections to clear
+      // This ensures the panel can reset its state properly
+      forwardToDevTools({
+        type: "page-refresh",
+        data: {
+          tabId: tabId,
+          timestamp: Date.now(),
+          removedConnections: originalCount - websocketData.connections.length,
+          navigationUrl: currentUrl,
+        },
+      });
+    } else {
+      console.log(`[WebSocket Proxy] URL query/hash change detected for tab ${tabId}, preserving connections`);
+      
+      // Send URL update event instead of page refresh
+      forwardToDevTools({
+        type: "url-update",
+        data: {
+          tabId: tabId,
+          timestamp: Date.now(),
+          newUrl: currentUrl,
+          previousUrl: previousData.url,
+        },
+      });
+    }
+    
+    // Update tracked URL
+    tabUrls.set(tabId, {
+      url: currentUrl,
+      lastUpdate: Date.now()
     });
   }
   
   if (changeInfo.status === "complete" && websocketData.isMonitoring) {
     // Can re-inject script or send status update here
   }
+});
+
+// Clean up tab URL tracking when tabs are closed
+chrome.tabs.onRemoved.addListener((tabId) => {
+  tabUrls.delete(tabId);
 });
 
 // When extension starts up

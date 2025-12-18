@@ -118,8 +118,23 @@ window.addEventListener("message", (event) => {
       source: "content-script",
       frameContext: {
         url: window.location.href,
+        stableId: (() => {
+          try {
+            const url = new URL(window.location.href);
+            return `${url.origin}${url.pathname}`;
+          } catch (e) {
+            return window.location.href;
+          }
+        })(),
         isIframe: window !== window.top,
-        frameId: window !== window.top ? window.location.href : null
+        frameId: window !== window.top ? (() => {
+          try {
+            const url = new URL(window.location.href);
+            return `${url.origin}${url.pathname}`;
+          } catch (e) {
+            return window.location.href;
+          }
+        })() : null
       }
     };
     
@@ -193,6 +208,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           source: "websocket-proxy-content",
           type: "block-incoming",
           enabled: message.enabled,
+        },
+        "*"
+      );
+      break;
+
+    case "ignore-connection":
+      window.postMessage(
+        {
+          source: "websocket-proxy-content",
+          type: "ignore-connection",
+          connectionId: message.connectionId,
+        },
+        "*"
+      );
+      break;
+
+    case "unignore-connection":
+      window.postMessage(
+        {
+          source: "websocket-proxy-content",
+          type: "unignore-connection",
+          connectionId: message.connectionId,
         },
         "*"
       );

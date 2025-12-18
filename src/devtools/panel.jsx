@@ -266,6 +266,26 @@ const WebSocketPanel = () => {
           }, 100);
         }
 
+        // Handle emergency shutdown event
+        if (eventData.type === "emergency-shutdown") {
+          console.warn(`[WebSocket Proxy] Emergency shutdown: ${eventData.reason}, ${eventData.messagesPerSecond} msg/s`);
+          
+          // Turn off monitoring in UI
+          setIsMonitoring(false);
+          
+          // Send stop monitoring message to background
+          chrome.runtime.sendMessage({
+            type: "stop-monitoring",
+            tabId: currentTabId,
+          }).catch(() => {});
+          
+          // Don't process this as a regular websocket event
+          if (hasSendResponse) {
+            sendResponse({ received: true, messageId });
+          }
+          return;
+        }
+
         // Update connection info
         setConnectionsMap((prevConnections) => {
           const newConnections = new Map(prevConnections);
