@@ -122,15 +122,17 @@
   }
 
   function containsBinaryData(str) {
+    // Check only first 1000 chars to avoid performance issues with large strings
+    const len = Math.min(str.length, 1000);
     let binaryCount = 0;
-    for (let i = 0; i < str.length; i++) {
+    for (let i = 0; i < len; i++) {
       const charCode = str.charCodeAt(i);
       if ((charCode < 32 && charCode !== 9 && charCode !== 10 && charCode !== 13) || charCode > 126) {
         binaryCount++;
       }
     }
     
-    return binaryCount / str.length > 0.2;
+    return binaryCount / len > 0.2;
   }
 
 
@@ -223,11 +225,29 @@
 
 
 
+  const MAX_PREVIEW_SIZE = 200 * 1024; // 200KB limit for preview processing
+
   function processMessageWithBinary(data) {
     // Simple binary detection - if it's binary data, mark it as binary
     const isBinary = isBinaryData(data);
     
     if (isBinary) {
+      // Check data size before attempting to decode
+      let size = 0;
+      if (data instanceof ArrayBuffer) size = data.byteLength;
+      else if (data instanceof Uint8Array) size = data.length;
+      else if (data instanceof Blob) size = data.size;
+      else if (typeof data === 'string') size = data.length;
+
+      if (size > MAX_PREVIEW_SIZE) {
+        return {
+          isProtobuf: true,
+          protobufDecoded: { error: `Data too large to preview (${size} bytes)` },
+          protobufRaw: `[Binary data ${size} bytes - Preview hidden for performance]`,
+          protobufError: null
+        };
+      }
+
       // Always mark as binary, then try to decode for additional info
       const decodeResult = tryDecodeAsProtobuf(data);
       
@@ -290,7 +310,12 @@
 
   // Helper function to convert bytes to hex string
   function bytesToHexString(bytes) {
-    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
+    const hexParts = new Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) {
+      const b = bytes[i];
+      hexParts[i] = (b < 16 ? '0' : '') + b.toString(16);
+    }
+    return hexParts.join(' ');
   }
 
   // Simple decode: try protobuf, fallback to hex
