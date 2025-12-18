@@ -83,13 +83,13 @@ All data processing occurs entirely within your browser using browser-specific l
 ### Access Control
 - Only you can access your debugging data
 - No remote access capabilities
-- Data is tied to your Chrome profile
+- Data is tied to your browser profile (Chrome or Edge)
 
 ## Your Rights and Control
 
 ### Data Access
 - View all stored favorites through the extension interface
-- Check extension storage usage in Chrome settings
+- Check extension storage usage in browser settings (Chrome/Edge)
 - Export or backup favorites manually if needed
 
 ### Data Deletion
@@ -123,13 +123,20 @@ For privacy-related questions or concerns:
 - **GitHub Issues**: https://github.com/law-chain-hot/websocket-devtools/issues
 - **Project Homepage**: https://github.com/law-chain-hot/websocket-devtools
 
+## Browser Compatibility
+
+This extension is compatible with:
+- **Google Chrome**: Available on Chrome Web Store
+- **Microsoft Edge**: Available on Microsoft Edge Add-ons store
+- **Cross-browser Support**: Same privacy standards apply across all supported browsers
+
 ## Summary
 
 WebSocket DevTools prioritizes your privacy by:
-- Processing all data locally in your browser
+- Processing all data locally in your browser (Chrome/Edge)
 - Never transmitting data to external servers
 - Giving you full control over your debugging data
 - Operating transparently as an open-source project
 - Using minimal, necessary permissions only
 
-This extension is built for developers, by developers, with a commitment to privacy and transparency. 
+This extension is built for developers, by developers, with a commitment to privacy and transparency across all supported browsers. 
