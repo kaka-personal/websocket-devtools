@@ -299,6 +299,10 @@
   color: var(--danger-color);
 }
 
+.export-messages-btn:hover:not(:disabled) {
+  color: var(--accent-color);
+}
+
 .clear-messages-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

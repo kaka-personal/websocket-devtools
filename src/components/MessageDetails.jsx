@@ -4,7 +4,7 @@ import { analyzeFilterPattern, filterMessages } from "../utils/filterUtils";
 import JsonViewer from "./JsonViewer";
 import useNewMessageHighlight from "../hooks/useNewMessageHighlight";
 import { addFromMessageList } from "../utils/globalFavorites";
-import { Ban, Search, Settings, CircleX } from "lucide-react";
+import { Ban, Search, Settings, CircleX, Download } from "lucide-react";
 import { t } from "../utils/i18n.js";
 import CheeseIcon from "../Icons/cheese.jsx";
 import ProtobufIcon from "../Icons/Protobuf.jsx";
@@ -283,6 +283,68 @@ const MessageDetails = ({
     return `${timeString}.${milliseconds.substring(0, 3)}`;
   };
 
+  const formatExportTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    const pad = (value, length = 2) => value.toString().padStart(length, "0");
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+      date.getSeconds()
+    )}.${pad(date.getMilliseconds(), 3)}`;
+  };
+
+  const formatExportFileTimestamp = (date = new Date()) => {
+    const pad = (value, length = 2) => value.toString().padStart(length, "0");
+
+    return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(
+      date.getDate()
+    )}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(
+      date.getSeconds()
+    )}`;
+  };
+
+  const normalizeMessageDataForExport = (value) => {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (value instanceof ArrayBuffer) {
+      const bytes = Array.from(new Uint8Array(value));
+      return {
+        type: "ArrayBuffer",
+        byteLength: value.byteLength,
+        hex: bytes.map((byte) => byte.toString(16).padStart(2, "0")).join(""),
+      };
+    }
+
+    if (value instanceof Uint8Array) {
+      const bytes = Array.from(value);
+      return {
+        type: "Uint8Array",
+        byteLength: value.byteLength,
+        hex: bytes.map((byte) => byte.toString(16).padStart(2, "0")).join(""),
+      };
+    }
+
+    if (value instanceof Blob) {
+      return {
+        type: "Blob",
+        size: value.size,
+      };
+    }
+
+    if (value === undefined) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      return String(value);
+    }
+  };
+
   if (!connection) {
     return (
       <div className="message-details">
@@ -418,6 +480,54 @@ const MessageDetails = ({
     clearHighlights(); // Clear any remaining highlights
   };
 
+  const handleExportMessages = () => {
+    if (!connection || !connection.messages || connection.messages.length === 0) {
+      return;
+    }
+
+    const exportPayload = {
+      connection: {
+        id: connection.id,
+        url: connection.url,
+        status: connection.status || null,
+      },
+      exportedAt: new Date().toISOString(),
+      messageCount: connection.messages.length,
+      messages: connection.messages.map((message) => ({
+        messageId: message.messageId,
+        type: message.type,
+        direction: message.direction || null,
+        timestamp: message.timestamp,
+        timestampText: formatExportTimestamp(message.timestamp),
+        data: normalizeMessageDataForExport(message.data),
+        simulated: Boolean(message.simulated),
+        blocked: Boolean(message.blocked),
+        reason: message.reason || null,
+        isProtobuf: Boolean(message.isProtobuf),
+        protobufDecoded: message.isProtobuf
+          ? normalizeMessageDataForExport(message.protobufDecoded)
+          : null,
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], {
+      type: "application/json;charset=utf-8",
+    });
+    const downloadUrl = URL.createObjectURL(blob);
+    const fileName = `ws-messages-${formatExportFileTimestamp()}.json`;
+    const link = document.createElement("a");
+
+    link.href = downloadUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => {
+      URL.revokeObjectURL(downloadUrl);
+    }, 0);
+  };
+
   const getSelectedMessage = () => {
     if (!selectedMessageKey) return null;
     return sortedMessages.find((msg) => {
@@ -540,6 +650,14 @@ const MessageDetails = ({
               <span className="checkmark"></span>
               <span className="checkbox-label">{t("messageDetails.controls.invert")}</span>
             </label>
+            <button
+              className="clear-messages-btn export-messages-btn"
+              onClick={handleExportMessages}
+              disabled={!connection || !connection.messages || connection.messages.length === 0}
+              title={t("favorites.export")}
+            >
+              <Download size={14} />
+            </button>
             <button
               className="clear-messages-btn"
               onClick={handleClearMessagesList}
