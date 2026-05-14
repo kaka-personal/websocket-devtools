@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { analyzeFilterPattern, filterMessages } from "../utils/filterUtils";
+import { analyzeFilterFeedback, filterMessages } from "../utils/filterUtils";
 import filterPresetsService from "../utils/filterPresetsService";
 import JsonViewer from "./JsonViewer";
 import useNewMessageHighlight from "../hooks/useNewMessageHighlight";
@@ -91,12 +91,21 @@ const MessageDetails = ({
   const [filterHistoryDraft, setFilterHistoryDraft] = useState("");
   const [filterPresets, setFilterPresets] = useState([]);
   const [selectedFilterPresetId, setSelectedFilterPresetId] = useState("");
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const searchInputRef = useRef(null);
   const importInputRef = useRef(null);
+  const messagesTableContainerRef = useRef(null);
   const isNavigatingFilterHistoryRef = useRef(false);
   const isApplyingFilterPresetRef = useRef(false);
+  const isNearBottomRef = useRef(true);
+  const previousRenderedConnectionIdRef = useRef(null);
+  const previousMessageCountRef = useRef(0);
 
-  const filterPattern = useMemo(() => analyzeFilterPattern(filterText), [filterText]);
+  const filterFeedback = useMemo(
+    () => analyzeFilterFeedback(filterText),
+    [filterText]
+  );
+  const connectionMessages = connection?.messages ?? [];
 
   const commitFilterHistory = (value) => {
     const normalizedValue = value.trim();
@@ -379,6 +388,58 @@ const MessageDetails = ({
     }
   };
 
+  const filteredMessages = useMemo(
+    () =>
+      filterMessages(connectionMessages, {
+        direction: filterDirection,
+        text: filterText,
+        invert: filterInvert,
+      }),
+    [connectionMessages, filterDirection, filterText, filterInvert]
+  );
+
+  const sortedMessages = useMemo(
+    () =>
+      [...filteredMessages].sort((a, b) => {
+        return a.timestamp - b.timestamp;
+      }),
+    [filteredMessages]
+  );
+
+  const isContainerNearBottom = (element) => {
+    if (!element) {
+      return true;
+    }
+
+    return element.scrollHeight - element.scrollTop - element.clientHeight <= 24;
+  };
+
+  useEffect(() => {
+    const tableContainer = messagesTableContainerRef.current;
+    if (!tableContainer) {
+      return;
+    }
+
+    const connectionChanged =
+      previousRenderedConnectionIdRef.current !== selectedConnectionId;
+    const messageCountChanged =
+      previousMessageCountRef.current !== sortedMessages.length;
+
+    previousRenderedConnectionIdRef.current = selectedConnectionId;
+    previousMessageCountRef.current = sortedMessages.length;
+
+    if (
+      autoScrollEnabled &&
+      (connectionChanged || messageCountChanged) &&
+      (connectionChanged || isNearBottomRef.current)
+    ) {
+      requestAnimationFrame(() => {
+        tableContainer.scrollTop = tableContainer.scrollHeight;
+        isNearBottomRef.current = true;
+      });
+    }
+  }, [autoScrollEnabled, selectedConnectionId, sortedMessages.length]);
+
   if (!connection) {
     return (
       <div className="message-details">
@@ -388,18 +449,6 @@ const MessageDetails = ({
       </div>
     );
   }
-
-  // First use the original filterMessages to filter direction/text
-  let filteredMessages = filterMessages(connection.messages, {
-    direction: filterDirection,
-    text: filterText,
-    invert: filterInvert,
-  });
-
-  // Sort messages
-  const sortedMessages = [...filteredMessages].sort((a, b) => {
-    return a.timestamp - b.timestamp;
-  });
 
   // formatMessage function has been moved to the JsonViewer component for internal handling
 
@@ -515,6 +564,10 @@ const MessageDetails = ({
     onClearMessages(connection.id);
     setSelectedMessageKey(null);
     clearHighlights(); // Clear any remaining highlights
+  };
+
+  const handleMessagesTableScroll = (event) => {
+    isNearBottomRef.current = isContainerNearBottom(event.currentTarget);
   };
 
   const handleImportMessagesClick = () => {
@@ -823,9 +876,33 @@ const MessageDetails = ({
               <span className="checkmark"></span>
               <span className="checkbox-label">{t("messageDetails.controls.invert")}</span>
             </label>
+            <label className="invert-checkbox auto-scroll-toggle">
+              <input
+                type="checkbox"
+                checked={autoScrollEnabled}
+                onChange={(e) => {
+                  const nextValue = e.target.checked;
+                  setAutoScrollEnabled(nextValue);
+
+                  if (nextValue) {
+                    requestAnimationFrame(() => {
+                      const tableContainer = messagesTableContainerRef.current;
+                      if (tableContainer) {
+                        tableContainer.scrollTop = tableContainer.scrollHeight;
+                        isNearBottomRef.current = true;
+                      }
+                    });
+                  }
+                }}
+              />
+              <span className="checkmark"></span>
+              <span className="checkbox-label">{t("messageDetails.controls.autoScroll")}</span>
+            </label>
             <div className="filter-controls filter-presets-select">
               <select value={selectedFilterPresetId} onChange={handleFilterPresetChange}>
-                <option value="">{t("messageDetails.controls.filterFavorites")}</option>
+                <option value="" disabled hidden>
+                  {t("messageDetails.controls.filterFavorites")}
+                </option>
                 {filterPresets.map((preset) => (
                   <option key={preset.id} value={preset.id}>
                     {preset.name}
@@ -880,14 +957,19 @@ const MessageDetails = ({
               onChange={handleImportMessagesFileChange}
             />
           </div>
-          {filterPattern.mode === "regex" && (
+          {filterFeedback.usesFieldSearch && (
+            <div className="filter-feedback info">
+              {t("messageDetails.controls.fieldSearchHint")}
+            </div>
+          )}
+          {filterFeedback.hasRegex && filterFeedback.mode !== "invalid-regex" && (
             <div className="filter-feedback info">
               {t("messageDetails.controls.regexMode")}
             </div>
           )}
-          {filterPattern.mode === "invalid-regex" && (
+          {filterFeedback.mode === "invalid-regex" && (
             <div className="filter-feedback error">
-              {t("messageDetails.controls.invalidRegex")}: {filterPattern.error}
+              {t("messageDetails.controls.invalidRegex")}: {filterFeedback.error}
             </div>
           )}
         </div>
@@ -902,9 +984,11 @@ const MessageDetails = ({
           <PanelGroup direction="vertical">
             <Panel defaultSize={selectedMessageKey ? 70 : 100} minSize={5}>
               <div 
+                ref={messagesTableContainerRef}
                 className="messages-table-container" 
                 tabIndex={0}
                 style={{ outline: 'none' }}
+                onScroll={handleMessagesTableScroll}
               >
                 <table className="ws-messages-table">
                   <thead>

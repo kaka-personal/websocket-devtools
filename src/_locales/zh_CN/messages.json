@@ -827,6 +827,14 @@
     "message": "无法从该文件导入消息",
     "description": "Translation for messageDetails.controls.importMessagesError"
   },
+  "messageDetails_controls_autoScroll": {
+    "message": "跟随最新",
+    "description": "Translation for messageDetails.controls.autoScroll"
+  },
+  "messageDetails_controls_fieldSearchHint": {
+    "message": "已启用字段搜索，例如：event:heartbeat role:user",
+    "description": "Translation for messageDetails.controls.fieldSearchHint"
+  },
   "messageDetails_controls_clearMessages": {
     "message": "清空所有消息",
     "description": "Translation for messageDetails.controls.clearMessages"

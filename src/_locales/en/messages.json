@@ -827,6 +827,14 @@
     "message": "Unable to import messages from this file",
     "description": "Translation for messageDetails.controls.importMessagesError"
   },
+  "messageDetails_controls_autoScroll": {
+    "message": "Follow latest",
+    "description": "Translation for messageDetails.controls.autoScroll"
+  },
+  "messageDetails_controls_fieldSearchHint": {
+    "message": "Field search enabled. Example: event:heartbeat role:user",
+    "description": "Translation for messageDetails.controls.fieldSearchHint"
+  },
   "messageDetails_controls_clearMessages": {
     "message": "Clear all messages",
     "description": "Translation for messageDetails.controls.clearMessages"

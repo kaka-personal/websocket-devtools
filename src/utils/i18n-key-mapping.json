@@ -206,6 +206,8 @@
   "messageDetails_controls_exportMessages": "messageDetails.controls.exportMessages",
   "messageDetails_controls_importMessages": "messageDetails.controls.importMessages",
   "messageDetails_controls_importMessagesError": "messageDetails.controls.importMessagesError",
+  "messageDetails_controls_autoScroll": "messageDetails.controls.autoScroll",
+  "messageDetails_controls_fieldSearchHint": "messageDetails.controls.fieldSearchHint",
   "messageDetails_controls_clearMessages": "messageDetails.controls.clearMessages",
   "messageDetails_table_data": "messageDetails.table.data",
   "messageDetails_table_length": "messageDetails.table.length",

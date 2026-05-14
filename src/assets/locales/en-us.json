@@ -206,6 +206,8 @@
   "messageDetails.controls.exportMessages": "Export all messages",
   "messageDetails.controls.importMessages": "Import messages to current connection",
   "messageDetails.controls.importMessagesError": "Unable to import messages from this file",
+  "messageDetails.controls.autoScroll": "Follow latest",
+  "messageDetails.controls.fieldSearchHint": "Field search enabled. Example: event:heartbeat role:user",
   "messageDetails.controls.clearMessages": "Clear all messages",
   "messageDetails.table.data": "Data",
   "messageDetails.table.length": "Length",
