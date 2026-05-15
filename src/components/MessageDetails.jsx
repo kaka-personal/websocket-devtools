@@ -13,7 +13,14 @@ import {
   Upload,
   Star,
   Trash2,
+  Table as TableIcon,
+  List as ListIcon,
+  MessageSquare,
+  Braces,
 } from "lucide-react";
+
+const VIEW_MODE_STORAGE_KEY = "ws-message-view-mode";
+const VIEW_MODES = ["table", "compact", "conversation", "json"];
 import { t } from "../utils/i18n.js";
 import ProtobufIcon from "../Icons/Protobuf.jsx";
 
@@ -76,6 +83,24 @@ const MessageDetails = ({
   const [filterPresets, setFilterPresets] = useState([]);
   const [selectedFilterPresetId, setSelectedFilterPresetId] = useState("");
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
+  const [viewMode, setViewMode] = useState(() => {
+    try {
+      const stored = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+      return VIEW_MODES.includes(stored) ? stored : "table";
+    } catch {
+      return "table";
+    }
+  });
+
+  const handleViewModeChange = (mode) => {
+    if (!VIEW_MODES.includes(mode) || mode === viewMode) return;
+    setViewMode(mode);
+    try {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+    } catch {
+      // ignore quota errors
+    }
+  };
   const searchInputRef = useRef(null);
   const importInputRef = useRef(null);
   const messagesTableContainerRef = useRef(null);
@@ -270,7 +295,7 @@ const MessageDetails = ({
           
           // Scroll the selected row into view
           setTimeout(() => {
-            const rowElement = document.querySelector(`tr[data-message-id="${newMessageKey}"]`);
+            const rowElement = document.querySelector(`[data-message-id="${newMessageKey}"]`);
             const tableContainer = document.querySelector('.messages-table-container');
             
             if (rowElement && tableContainer) {
@@ -369,6 +394,47 @@ const MessageDetails = ({
       return JSON.parse(JSON.stringify(value));
     } catch (error) {
       return String(value);
+    }
+  };
+
+  const formatJsonMessage = (message) => {
+    if (!message) {
+      return "";
+    }
+
+    const payload = {
+      messageId: message.messageId,
+      timestamp: formatExportTimestamp(message.timestamp),
+      type: message.type,
+      direction: message.direction ?? null,
+      simulated: Boolean(message.simulated),
+      blocked: Boolean(message.blocked),
+      url: message.url ?? null,
+      reason: message.reason ?? null,
+      data: normalizeMessageDataForExport(message.data),
+    };
+
+    if (message.isProtobuf) {
+      payload.protobuf = {
+        decoded: normalizeMessageDataForExport(message.protobufDecoded),
+        raw: normalizeMessageDataForExport(message.protobufRaw),
+        error: message.protobufError ?? null,
+      };
+    }
+
+    try {
+      return JSON.stringify(payload, null, 2);
+    } catch (error) {
+      return JSON.stringify(
+        {
+          messageId: message.messageId,
+          timestamp: formatExportTimestamp(message.timestamp),
+          type: message.type,
+          error: String(error),
+        },
+        null,
+        2
+      );
     }
   };
 
@@ -864,6 +930,40 @@ const MessageDetails = ({
                 ))}
               </select>
             </div>
+            <div className="view-mode-switcher" role="group" aria-label="View mode">
+              <button
+                type="button"
+                className={`view-mode-btn ${viewMode === "table" ? "active" : ""}`}
+                onClick={() => handleViewModeChange("table")}
+                title="Table view"
+              >
+                <TableIcon size={13} />
+              </button>
+              <button
+                type="button"
+                className={`view-mode-btn ${viewMode === "compact" ? "active" : ""}`}
+                onClick={() => handleViewModeChange("compact")}
+                title="Compact log view"
+              >
+                <ListIcon size={13} />
+              </button>
+              <button
+                type="button"
+                className={`view-mode-btn ${viewMode === "conversation" ? "active" : ""}`}
+                onClick={() => handleViewModeChange("conversation")}
+                title="Conversation view"
+              >
+                <MessageSquare size={13} />
+              </button>
+              <button
+                type="button"
+                className={`view-mode-btn ${viewMode === "json" ? "active" : ""}`}
+                onClick={() => handleViewModeChange("json")}
+                title="JSON formatted view"
+              >
+                <Braces size={13} />
+              </button>
+            </div>
             <button
               className="clear-messages-btn save-filter-btn"
               onClick={handleSaveCurrentFilterPreset}
@@ -937,50 +1037,148 @@ const MessageDetails = ({
         ) : (
           <PanelGroup direction="vertical">
             <Panel defaultSize={selectedMessageKey ? 70 : 100} minSize={5}>
-              <div 
+              <div
                 ref={messagesTableContainerRef}
-                className="messages-table-container" 
+                className={`messages-table-container view-${viewMode}`}
                 tabIndex={0}
                 style={{ outline: 'none' }}
                 onScroll={handleMessagesTableScroll}
               >
-                <table className="ws-messages-table">
-                  <thead>
-                    <tr>
-                      <th className="col-data">{t("messageDetails.table.data")}</th>
-                      <th className="col-length">{t("messageDetails.table.length")}</th>
-                      <th className="col-time">{t("messageDetails.table.time")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                {viewMode === "table" && (
+                  <table className="ws-messages-table">
+                    <thead>
+                      <tr>
+                        <th className="col-data">{t("messageDetails.table.data")}</th>
+                        <th className="col-length">{t("messageDetails.table.length")}</th>
+                        <th className="col-time">{t("messageDetails.table.time")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedMessages.map((message, index) => {
+                        const messageKey = message.messageId;
+                        const isSelected = selectedMessageKey === messageKey;
+                        const isNewMsg = isNewMessage(messageKey);
+                        const isHovered = hoveredMessageKey === messageKey;
+                        return (
+                          <tr
+                            key={`${messageKey}-${index}`}
+                            data-message-id={messageKey}
+                            className={`message-row ${message.direction} ${message.simulated ? "simulated" : ""} ${
+                              message.blocked ? "blocked" : ""
+                            } ${isSelected ? "selected" : ""} ${isNewMsg ? "new-message" : ""} ${
+                              isHovered ? "hovered" : ""
+                            }`}
+                            onClick={() => handleMessageClick(messageKey)}
+                            onMouseEnter={() => setHoveredMessageKey(messageKey)}
+                            onMouseLeave={() => setHoveredMessageKey(null)}
+                          >
+                            <td className="col-data">
+                              <div className="data-cell-wrapper">{renderDataCell(message)}</div>
+                            </td>
+                            <td className="col-length">{getMessageLength(message)}</td>
+                            <td className="col-time">{formatTimestamp(message.timestamp)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+
+                {viewMode === "compact" && (
+                  <ul className="ws-messages-compact">
                     {sortedMessages.map((message, index) => {
                       const messageKey = message.messageId;
                       const isSelected = selectedMessageKey === messageKey;
                       const isNewMsg = isNewMessage(messageKey);
-                      const isHovered = hoveredMessageKey === messageKey;
+                      const isSystem = message.type !== "message";
+                      const arrow =
+                        message.direction === "outgoing"
+                          ? "↑"
+                          : message.direction === "incoming"
+                          ? "↓"
+                          : "•";
                       return (
-                        <tr
-                          key={`${messageKey}-${index}`} // Keep React key unique
+                        <li
+                          key={`${messageKey}-${index}`}
                           data-message-id={messageKey}
-                          className={`message-row ${message.direction} ${message.simulated ? "simulated" : ""} ${
-                            message.blocked ? "blocked" : ""
-                          } ${isSelected ? "selected" : ""} ${isNewMsg ? "new-message" : ""} ${
-                            isHovered ? "hovered" : ""
-                          }`}
+                          className={`compact-row ${message.direction || "system"} ${
+                            isSelected ? "selected" : ""
+                          } ${isNewMsg ? "new-message" : ""} ${isSystem ? "system" : ""}`}
                           onClick={() => handleMessageClick(messageKey)}
-                          onMouseEnter={() => setHoveredMessageKey(messageKey)}
-                          onMouseLeave={() => setHoveredMessageKey(null)}
                         >
-                          <td className="col-data">
-                            <div className="data-cell-wrapper">{renderDataCell(message)}</div>
-                          </td>
-                          <td className="col-length">{getMessageLength(message)}</td>
-                          <td className="col-time">{formatTimestamp(message.timestamp)}</td>
-                        </tr>
+                          <span className="compact-time">{formatTimestamp(message.timestamp)}</span>
+                          <span className={`compact-arrow ${message.direction || "system"}`}>
+                            {arrow}
+                          </span>
+                          <span className="compact-text">{truncateMessage(message, 200)}</span>
+                          <span className="compact-length">{getMessageLength(message)}</span>
+                        </li>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </ul>
+                )}
+
+                {viewMode === "conversation" && (
+                  <div className="ws-messages-conversation">
+                    {sortedMessages.map((message, index) => {
+                      const messageKey = message.messageId;
+                      const isSelected = selectedMessageKey === messageKey;
+                      const isNewMsg = isNewMessage(messageKey);
+                      const isSystem = message.type !== "message";
+                      const side = isSystem
+                        ? "center"
+                        : message.direction === "outgoing"
+                        ? "right"
+                        : "left";
+                      return (
+                        <div
+                          key={`${messageKey}-${index}`}
+                          data-message-id={messageKey}
+                          className={`bubble-row ${side} ${isSelected ? "selected" : ""} ${
+                            isNewMsg ? "new-message" : ""
+                          }`}
+                          onClick={() => handleMessageClick(messageKey)}
+                        >
+                          <div className={`bubble ${side} ${isSystem ? "system" : ""}`}>
+                            <div className="bubble-text">{truncateMessage(message, 280)}</div>
+                            <div className="bubble-meta">
+                              <span>{formatTimestamp(message.timestamp)}</span>
+                              <span>·</span>
+                              <span>{getMessageLength(message)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {viewMode === "json" && (
+                  <div className="ws-messages-json">
+                    {sortedMessages.map((message, index) => {
+                      const messageKey = message.messageId;
+                      const isSelected = selectedMessageKey === messageKey;
+                      const isNewMsg = isNewMessage(messageKey);
+                      const isSystem = message.type !== "message";
+                      return (
+                        <div
+                          key={`${messageKey}-${index}`}
+                          data-message-id={messageKey}
+                          className={`json-row ${message.direction || "system"} ${
+                            isSelected ? "selected" : ""
+                          } ${isNewMsg ? "new-message" : ""} ${isSystem ? "system" : ""}`}
+                          onClick={() => handleMessageClick(messageKey)}
+                        >
+                          <div className="json-row-meta">
+                            <span className="json-time">{formatTimestamp(message.timestamp)}</span>
+                            <span className="json-length">{getMessageLength(message)}</span>
+                          </div>
+                          <pre className="json-row-code">{formatJsonMessage(message)}</pre>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </Panel>
 
