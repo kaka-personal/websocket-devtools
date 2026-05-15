@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+﻿import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { analyzeFilterFeedback, filterMessages } from "../utils/filterUtils";
 import filterPresetsService from "../utils/filterPresetsService";
 import JsonViewer from "./JsonViewer";
 import useNewMessageHighlight from "../hooks/useNewMessageHighlight";
+import { SearchQuery, findNext, setSearchQuery } from "@codemirror/search";
 import {
   Ban,
   Search,
@@ -84,6 +85,7 @@ const MessageDetails = ({
   const [filterPresets, setFilterPresets] = useState([]);
   const [selectedFilterPresetId, setSelectedFilterPresetId] = useState("");
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
+  const [messageBlockSearches, setMessageBlockSearches] = useState({});
   const [viewMode, setViewMode] = useState(() => {
     try {
       const stored = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
@@ -105,6 +107,7 @@ const MessageDetails = ({
   const searchInputRef = useRef(null);
   const importInputRef = useRef(null);
   const messagesTableContainerRef = useRef(null);
+  const jsonEditorViewsRef = useRef(new Map());
   const isNavigatingFilterHistoryRef = useRef(false);
   const isApplyingFilterPresetRef = useRef(false);
   const isNearBottomRef = useRef(true);
@@ -210,6 +213,8 @@ const MessageDetails = ({
     setFilterHistoryIndex(-1);
     setFilterHistoryDraft("");
     setSelectedFilterPresetId("");
+    setMessageBlockSearches({});
+    jsonEditorViewsRef.current.clear();
   }, [selectedConnectionId]);
 
   useEffect(() => {
@@ -398,20 +403,47 @@ const MessageDetails = ({
     }
   };
 
-  const getMessageSearchText = (message) => {
-    if (!message) return "";
-    const value = message.data ?? "";
-    if (typeof value === "string") {
-      return value;
+  const registerJsonEditorView = (messageKey, view) => {
+    if (!messageKey) return;
+
+    if (view) {
+      jsonEditorViewsRef.current.set(messageKey, view);
+      return;
     }
-    if (value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Blob) {
-      return normalizeMessageDataForExport(value) ? JSON.stringify(normalizeMessageDataForExport(value)) : "";
+
+    jsonEditorViewsRef.current.delete(messageKey);
+  };
+
+  const applyMessageBlockSearch = (messageKey, query, shouldJump = false) => {
+    setMessageBlockSearches((prev) => ({
+      ...prev,
+      [messageKey]: query,
+    }));
+
+    const editorView = jsonEditorViewsRef.current.get(messageKey);
+    if (!editorView) return;
+
+    editorView.dispatch({
+      effects: setSearchQuery.of(
+        new SearchQuery({
+          search: query,
+          literal: true,
+        })
+      ),
+    });
+
+    if (shouldJump && query.trim()) {
+      findNext(editorView);
     }
-    try {
-      return JSON.stringify(normalizeMessageDataForExport(value), null, 2);
-    } catch {
-      return String(value);
-    }
+  };
+
+  const handleMessageBlockSearchChange = (messageKey, query) => {
+    applyMessageBlockSearch(messageKey, query, false);
+  };
+
+  const handleMessageBlockSearchSubmit = (messageKey) => {
+    const query = messageBlockSearches[messageKey] || "";
+    applyMessageBlockSearch(messageKey, query, true);
   };
 
   const getJsonViewPayload = (message) => {
@@ -1152,7 +1184,7 @@ const MessageDetails = ({
                         : message.direction === "outgoing"
                         ? "right"
                         : "left";
-                      const messageText = getMessageSearchText(message);
+                      const blockSearchValue = messageBlockSearches[messageKey] || "";
                       return (
                         <div
                           key={`${messageKey}-${index}`}
@@ -1173,19 +1205,42 @@ const MessageDetails = ({
                             </span>
                             <span className="json-length">{getMessageLength(message)}</span>
                             <div className="json-row-actions">
-                              <button
-                                type="button"
-                                className="json-row-action-btn"
-                                title="Search by this message"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  setFilterText(messageText);
-                                  searchInputRef.current?.focus();
-                                  searchInputRef.current?.select?.();
-                                }}
-                              >
-                                <Search size={12} />
-                              </button>
+                              <div className="json-row-search">
+                                <Search size={11} className="json-row-search-icon" />
+                                <input
+                                  type="text"
+                                  value={blockSearchValue}
+                                  placeholder="Search in this message"
+                                  onClick={(event) => event.stopPropagation()}
+                                  onMouseDown={(event) => event.stopPropagation()}
+                                  onChange={(event) => {
+                                    event.stopPropagation();
+                                    handleMessageBlockSearchChange(messageKey, event.target.value);
+                                  }}
+                                  onKeyDown={(event) => {
+                                    event.stopPropagation();
+                                    if (event.key === "Enter") {
+                                      handleMessageBlockSearchSubmit(messageKey);
+                                    }
+                                  }}
+                                />
+                                {blockSearchValue && (
+                                  <button
+                                    type="button"
+                                    className="json-row-search-clear"
+                                    title="Clear search"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      handleMessageBlockSearchChange(messageKey, "");
+                                    }}
+                                  >
+                                    <CircleX size={10} />
+                                  </button>
+                                )}
+                              </div>
+                              {copiedMessageKey === messageKey && (
+                                <span className="json-copy-tip">已复制</span>
+                              )}
                               <button
                                 type="button"
                                 className="json-row-action-btn"
@@ -1209,6 +1264,8 @@ const MessageDetails = ({
                               readOnly={true}
                               enableWrap={true}
                               enableNestedParse={false}
+                              enableSearch={true}
+                              onCreateEditor={(view) => registerJsonEditorView(messageKey, view)}
                             />
                           </div>
                         </div>
@@ -1239,6 +1296,7 @@ const MessageDetails = ({
                         if (!selectedMessage) return null;
 
                         const messageKey = selectedMessageKey;
+                        const selectedSearchValue = messageBlockSearches[messageKey] || "";
                         return (
                           // <div className="detail-body">
                           <>
@@ -1250,6 +1308,34 @@ const MessageDetails = ({
                                 ✕
                               </button>
                             </div> */}
+                            <div className="message-detail-searchbar">
+                              <div className="message-detail-search-input">
+                                <Search size={12} className="message-detail-search-icon" />
+                                <input
+                                  type="text"
+                                  value={selectedSearchValue}
+                                  placeholder="Search in this message"
+                                  onChange={(event) =>
+                                    handleMessageBlockSearchChange(messageKey, event.target.value)
+                                  }
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                      handleMessageBlockSearchSubmit(messageKey);
+                                    }
+                                  }}
+                                />
+                                {selectedSearchValue && (
+                                  <button
+                                    type="button"
+                                    className="message-detail-search-clear"
+                                    title="Clear search"
+                                    onClick={() => handleMessageBlockSearchChange(messageKey, "")}
+                                  >
+                                    <CircleX size={11} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                             <JsonViewer
                               data={normalizeMessageDataForExport(selectedMessage.data)}
                               className="compact"
@@ -1258,6 +1344,8 @@ const MessageDetails = ({
                               copyButtonText="📋 Copy"
                               copiedText="✓ Copied"
                               isCopied={copiedMessageKey === messageKey}
+                              enableSearch={true}
+                              onCreateEditor={(view) => registerJsonEditorView(messageKey, view)}
                             />
                             {/* </div> */}
                           </>

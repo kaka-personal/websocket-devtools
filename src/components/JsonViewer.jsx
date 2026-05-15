@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { json } from "@codemirror/lang-json";
+import { search } from "@codemirror/search";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
@@ -57,6 +58,8 @@ const JsonViewer = ({
   showNestedParseButton = true, // Control existing nested parse button
   showSimulateNestedParseButton = false, // Control button specifically for Simulate Message
   onSimulateNestedParse = null, // Callback for Simulate Message specific nested parse
+  enableSearch = false,
+  onCreateEditor = null,
 }) => {
   // Set initial wrap value based on content type: JSON defaults to no wrap, non-JSON defaults to wrap
   const [textWrap, setTextWrap] = useState(() => {
@@ -443,6 +446,7 @@ const JsonViewer = ({
 
   // CodeMirror extensions configuration
   const extensions = [
+    enableSearch ? search() : [],
     isValidJson ? json() : [],
     EditorView.theme({
       "&": {
@@ -628,6 +632,7 @@ const JsonViewer = ({
           value={content}
           onChange={handleChange}
           extensions={extensions}
+          onCreateEditor={onCreateEditor}
           theme={oneDark}
           basicSetup={{
             lineNumbers: true,
