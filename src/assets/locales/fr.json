@@ -246,8 +246,8 @@
   "popup.status.disabledOnNewPages": "Désactivé sur les nouvelles pages",
   "popup.openDevTools": "Ouvrir le panneau DevTools",
   "popup.devToolsHint": "Appuyez sur F12 → Trouvez l'onglet \"websocket-tool\"",
-  "popup.infoCard.title": "Proxy WebSocket",
-  "popup.infoCard.description": "Surveiller et déboguer les connexions WebSocket",
+  "popup.infoCard.title": "Inspecteur WebSocket",
+  "popup.infoCard.description": "Inspectez, filtrez et exportez le trafic WebSocket",
   "popup.status": "Statut",
   "popup.loading": "Chargement...",
   "popup.features.proxy.title": "Proxy",
@@ -264,5 +264,7 @@
   "simulate.animated.githubTooltip": "Si vous aimez ce plugin, jetez un œil à notre dépôt Github ~",
   "messageDetails.controls.deleteFilterFavoriteConfirm": "Delete filter preset \"{{name}}\"?",
   "messageDetails.controls.deleteFilterFavoriteConfirmFallback": "Delete this filter preset?",
-  "messageDetails.controls.filterFavoriteDuplicate": "This filter preset already exists."
+  "messageDetails.controls.filterFavoriteDuplicate": "This filter preset already exists.",
+  "popup.features.inspect.title": "Inspecter",
+  "popup.features.inspect.desc": "Flux en direct"
 }

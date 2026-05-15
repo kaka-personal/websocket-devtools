@@ -256,8 +256,8 @@
   "popup.status.disabledOnNewPages": "Disabled on new pages",
   "popup.openDevTools": "Open DevTools Panel",
   "popup.devToolsHint": "Press F12 → Find \"websocket-tool\" tab",
-  "popup.infoCard.title": "websocket-tool",
-  "popup.infoCard.description": "Inspect, replay, and control WebSocket traffic",
+  "popup.infoCard.title": "WebSocket Inspector",
+  "popup.infoCard.description": "Inspect, filter, and export WebSocket traffic",
   "popup.status": "Status",
   "popup.loading": "Loading...",
   "popup.features.proxy.title": "Proxy",
@@ -276,5 +276,7 @@
   "panel.trafficPause.description": "Message monitoring paused ({{rate}} msg/s). Click Resume to continue.",
   "panel.trafficPause.resume": "Resume",
   "panel.circuitBreaker.title": "High Traffic Detected",
-  "panel.circuitBreaker.description": "Monitoring stopped due to high traffic ({{rate}} msg/s). Click Monitor to resume."
+  "panel.circuitBreaker.description": "Monitoring stopped due to high traffic ({{rate}} msg/s). Click Monitor to resume.",
+  "popup.features.inspect.title": "Inspect",
+  "popup.features.inspect.desc": "Live frames"
 }

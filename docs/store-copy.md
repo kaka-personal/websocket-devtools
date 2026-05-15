@@ -3,16 +3,16 @@
 ## Brand Summary
 
 - Product name: `websocket-tool`
-- Tagline: `Inspect, replay, and control WebSocket traffic.`
-- Short positioning: `A Chrome DevTools extension for live WebSocket inspection, replay, and traffic control.`
+- Tagline: `Inspect WebSocket traffic directly inside Chrome DevTools.`
+- Short positioning: `A Chrome DevTools extension for live WebSocket inspection and analysis.`
 
 ## Short Description
 
-Inspect, replay, and control WebSocket traffic directly inside Chrome DevTools.
+Inspect WebSocket traffic directly inside Chrome DevTools.
 
 ## Promo Text
 
-Trace live frames, simulate client or server messages, block noisy traffic, and keep reusable payloads close at hand.
+Trace live frames, filter noisy traffic, and keep reusable payloads close at hand.
 
 ## Full Description
 
@@ -21,10 +21,10 @@ websocket-tool helps frontend engineers, backend engineers, QA, and protocol des
 Use websocket-tool to:
 
 - inspect WebSocket connections and message history in one place
-- simulate inbound and outbound messages for rapid testing
-- block send or receive traffic to reproduce edge cases
+- filter and search noisy traffic quickly
+- import previously exported message logs for offline review
 - create manual connections for targeted debugging
-- save reusable payloads as favorites
+- save reusable filter presets for repeated searches
 - keep monitoring active while working through reconnect and refresh flows
 
 Why teams use websocket-tool:
@@ -43,40 +43,40 @@ Privacy notes:
 ## Chrome Web Store Fields
 
 - Name: `websocket-tool`
-- Summary: `WebSocket traffic inspector and replay console for Chrome DevTools`
+- Summary: `WebSocket inspector and analysis console for Chrome DevTools`
 - Category suggestion: `Developer Tools`
 
 ## Edge Add-ons Fields
 
 - Name: `websocket-tool`
-- Short description: `Inspect, replay, and control WebSocket traffic in DevTools`
+- Short description: `Inspect WebSocket traffic in DevTools`
 
 ## Chinese Copy
 
 ### 简短描述
 
-直接在 Chrome DevTools 中查看、回放并控制 WebSocket 流量。
+直接在 Chrome DevTools 中查看 WebSocket 流量。
 
 ### 推广文案
 
-实时查看消息帧，模拟客户端或服务端消息，拦截噪声流量，并把常用测试载荷保存下来。
+实时查看消息帧、过滤噪声流量，并把常用载荷和筛选预设保存下来。
 
 ### 详细介绍
 
-websocket-tool 是一个面向开发者的 WebSocket 调试扩展，帮助你在不离开 DevTools 的情况下完成连接观察、消息回放、流量控制和问题复现。
+websocket-tool 是一个面向开发者的 WebSocket 调试扩展，帮助你在不离开 DevTools 的情况下完成连接观察、消息检索和问题复盘。
 
 你可以用它来：
 
 - 查看 WebSocket 连接和消息历史
-- 模拟发送或接收消息
-- 阻断发送或接收流量以复现异常场景
+- 快速过滤和搜索噪声流量
+- 导入之前导出的消息日志做离线分析
 - 手动创建连接做定向调试
-- 保存常用消息模板
-- 在刷新、重连和高流量场景下持续监控
+- 保存常用筛选预设，方便重复使用
+- 在处理重连和刷新流程时保持监控
 
 ## Screenshot Placeholders
 
 - Screenshot 1: connection list plus live traffic
 - Screenshot 2: message details plus JSON formatting
-- Screenshot 3: simulate panel and system events
-- Screenshot 4: favorites and traffic control
+- Screenshot 3: filter presets and search
+- Screenshot 4: import/export and reconnect flows

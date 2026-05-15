@@ -5,7 +5,7 @@
 
   **Inspect WebSocket traffic directly inside Chrome DevTools.**
 
-  A read-only developer panel for watching live frames, reviewing connection lifecycle, and filtering noisy streams — without touching application code.
+  A read-only developer panel for watching live frames, reviewing connection lifecycle, and filtering noisy streams without touching application code.
 
   **English** | [简体中文](./README_zh-CN.md)
 </div>
@@ -20,6 +20,7 @@ Modern apps hide critical product logic behind WebSocket streams: chat, dashboar
 - filter, search, and group frames across noisy connections
 - import previously exported message logs for offline review
 - keep everything local in the browser with no required backend service
+- save filter presets for repeated searches
 
 ## Visual Tour
 
@@ -52,7 +53,7 @@ Format payloads and inspect nested structures when reviewing structured traffic.
 
 - built directly into DevTools
 - import previously exported frame logs for offline analysis
-- keeps data local to the browser
+- keep data local to the browser
 
 ## Best Fit Use Cases
 

@@ -243,8 +243,8 @@
   "popup.status.disabledOnNewPages": "新頁面上已停用",
   "popup.openDevTools": "開啟開發者工具面板",
   "popup.devToolsHint": "按 F12 → 找到\"websocket-tool\"標籤頁",
-  "popup.infoCard.title": "WebSocket 代理",
-  "popup.infoCard.description": "監控和調試 WebSocket 連線",
+  "popup.infoCard.title": "WebSocket ???",
+  "popup.infoCard.description": "???????? WebSocket ??",
   "popup.status": "狀態",
   "popup.loading": "載入中...",
   "popup.features.proxy.title": "代理",
@@ -261,5 +261,7 @@
   "simulate.animated.githubTooltip": "如果你喜歡這個外掛，可以探索這個倉庫～",
   "messageDetails.controls.deleteFilterFavoriteConfirm": "Delete filter preset \"{{name}}\"?",
   "messageDetails.controls.deleteFilterFavoriteConfirmFallback": "Delete this filter preset?",
-  "messageDetails.controls.filterFavoriteDuplicate": "This filter preset already exists."
+  "messageDetails.controls.filterFavoriteDuplicate": "This filter preset already exists.",
+  "popup.features.inspect.title": "??",
+  "popup.features.inspect.desc": "????"
 }

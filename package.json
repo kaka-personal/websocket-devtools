@@ -1,7 +1,7 @@
 {
   "name": "websocket-tool",
   "version": "2.0.0",
-  "description": "Inspect, replay, and control WebSocket traffic directly inside Chrome DevTools",
+  "description": "Inspect WebSocket traffic directly inside Chrome DevTools",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -14,17 +14,16 @@
   },
   "keywords": [
     "websocket",
-    "proxy",
     "chrome-extension",
     "debugging",
     "devtools",
     "monitoring",
-    "simulation",
-    "interception",
     "developer-tools",
     "network-debugging",
     "real-time-monitoring",
-    "message-simulation",
+    "inspection",
+    "analysis",
+    "message-history",
     "web-development"
   ],
   "license": "MIT",

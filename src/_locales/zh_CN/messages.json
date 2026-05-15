@@ -1028,11 +1028,11 @@
     "description": "Translation for popup.devToolsHint"
   },
   "popup_infoCard_title": {
-    "message": "WebSocket 代理",
+    "message": "WebSocket ???",
     "description": "Translation for popup.infoCard.title"
   },
   "popup_infoCard_description": {
-    "message": "监控和调试 WebSocket 连接",
+    "message": "???????? WebSocket ??",
     "description": "Translation for popup.infoCard.description"
   },
   "popup_status": {
@@ -1110,6 +1110,14 @@
   "panel_circuitBreaker_description": {
     "message": "由于高流量 ({{rate}} 消息/秒)，监控已停止。点击 Monitor 按钮恢复。",
     "description": "Translation for panel.circuitBreaker.description"
+  },
+  "popup_features_inspect_title": {
+    "message": "??",
+    "description": "Translation for popup.features.inspect.title"
+  },
+  "popup_features_inspect_desc": {
+    "message": "????",
+    "description": "Translation for popup.features.inspect.desc"
   },
   "extensionName": {
     "message": "websocket-tool",

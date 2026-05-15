@@ -276,5 +276,7 @@
   "panel_trafficPause_description": "panel.trafficPause.description",
   "panel_trafficPause_resume": "panel.trafficPause.resume",
   "panel_circuitBreaker_title": "panel.circuitBreaker.title",
-  "panel_circuitBreaker_description": "panel.circuitBreaker.description"
+  "panel_circuitBreaker_description": "panel.circuitBreaker.description",
+  "popup_features_inspect_title": "popup.features.inspect.title",
+  "popup_features_inspect_desc": "popup.features.inspect.desc"
 }

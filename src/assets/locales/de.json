@@ -245,8 +245,8 @@
   "popup.status.disabledOnNewPages": "Deaktiviert auf neuen Seiten",
   "popup.openDevTools": "DevTools-Panel öffnen",
   "popup.devToolsHint": "Drücken Sie F12 → Finden Sie den \"websocket-tool\" Tab",
-  "popup.infoCard.title": "WebSocket Proxy",
-  "popup.infoCard.description": "WebSocket-Verbindungen überwachen und debuggen",
+  "popup.infoCard.title": "WebSocket-Inspektor",
+  "popup.infoCard.description": "WebSocket-Traffic pr?fen, filtern und exportieren",
   "popup.status": "Status",
   "popup.loading": "Lädt...",
   "popup.features.proxy.title": "Proxy",
@@ -263,5 +263,7 @@
   "simulate.animated.githubTooltip": "Wenn Ihnen das Plugin gefällt, schauen Sie sich gerne unser Github-Repository an~",
   "messageDetails.controls.deleteFilterFavoriteConfirm": "Delete filter preset \"{{name}}\"?",
   "messageDetails.controls.deleteFilterFavoriteConfirmFallback": "Delete this filter preset?",
-  "messageDetails.controls.filterFavoriteDuplicate": "This filter preset already exists."
+  "messageDetails.controls.filterFavoriteDuplicate": "This filter preset already exists.",
+  "popup.features.inspect.title": "Pr?fen",
+  "popup.features.inspect.desc": "Live-Frames"
 }

@@ -1028,11 +1028,11 @@
     "description": "Translation for popup.devToolsHint"
   },
   "popup_infoCard_title": {
-    "message": "websocket-tool",
+    "message": "WebSocket Inspector",
     "description": "Translation for popup.infoCard.title"
   },
   "popup_infoCard_description": {
-    "message": "Inspect, replay, and control WebSocket traffic",
+    "message": "Inspect, filter, and export WebSocket traffic",
     "description": "Translation for popup.infoCard.description"
   },
   "popup_status": {
@@ -1110,6 +1110,14 @@
   "panel_circuitBreaker_description": {
     "message": "Monitoring stopped due to high traffic ({{rate}} msg/s). Click Monitor to resume.",
     "description": "Translation for panel.circuitBreaker.description"
+  },
+  "popup_features_inspect_title": {
+    "message": "Inspect",
+    "description": "Translation for popup.features.inspect.title"
+  },
+  "popup_features_inspect_desc": {
+    "message": "Live frames",
+    "description": "Translation for popup.features.inspect.desc"
   },
   "extensionName": {
     "message": "websocket-tool",

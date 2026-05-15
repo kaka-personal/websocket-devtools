@@ -244,8 +244,8 @@
   "popup.status.disabledOnNewPages": "新しいページで無効",
   "popup.openDevTools": "DevToolsパネルを開く",
   "popup.devToolsHint": "F12キーを押して → \"websocket-tool\"タブを見つける",
-  "popup.infoCard.title": "WebSocket プロキシ",
-  "popup.infoCard.description": "WebSocket接続の監視とデバッグ",
+  "popup.infoCard.title": "WebSocket ??????",
+  "popup.infoCard.description": "WebSocket ?????????????????????",
   "popup.status": "状態",
   "popup.loading": "読み込み中...",
   "popup.features.proxy.title": "プロキシ",
@@ -262,5 +262,7 @@
   "simulate.animated.githubTooltip": "このプラグインが気に入ったら、このリポジトリをチェックしてみてください〜",
   "messageDetails.controls.deleteFilterFavoriteConfirm": "Delete filter preset \"{{name}}\"?",
   "messageDetails.controls.deleteFilterFavoriteConfirmFallback": "Delete this filter preset?",
-  "messageDetails.controls.filterFavoriteDuplicate": "This filter preset already exists."
+  "messageDetails.controls.filterFavoriteDuplicate": "This filter preset already exists.",
+  "popup.features.inspect.title": "??",
+  "popup.features.inspect.desc": "??????????"
 }

@@ -192,8 +192,8 @@ const Popup = () => {
             <SquareActivity size={16} />
           </div>
           <div style={styles.featureText}>
-            <div style={styles.featureTitle}>{t("popup.features.proxy.title")}</div>
-            <div style={styles.featureDesc}>{t("popup.features.proxy.desc")}</div>
+            <div style={styles.featureTitle}>{t("popup.features.inspect.title")}</div>
+            <div style={styles.featureDesc}>{t("popup.features.inspect.desc")}</div>
           </div>
         </div>
       </div>

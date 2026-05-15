@@ -3,16 +3,17 @@
 ## Product Name
 
 - Primary name: `websocket-tool`
-- Category descriptor: `WebSocket Traffic Inspector`
-- Tagline: `Inspect, replay, and control WebSocket traffic.`
+- Category descriptor: `WebSocket Inspector`
+- Tagline: `Inspect WebSocket traffic directly inside Chrome DevTools.`
 
 ## Positioning
 
 websocket-tool is a developer-first debugging extension focused on three jobs:
 
 - seeing every WebSocket frame in context
-- replaying client and server messages quickly
-- controlling noisy or unstable traffic during debugging
+- filtering and searching noisy traffic quickly
+- reviewing connection history and lifecycle events
+- importing and analyzing exported message logs locally
 
 ## Tone
 
