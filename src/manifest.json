@@ -43,7 +43,7 @@
   ],
 
   "action": {
-    "default_title": "websocket-tools - Inspect and Replay WebSocket Traffic",
+    "default_title": "websocket-tools - Inspect WebSocket Traffic in DevTools",
     "default_popup": "src/popup/popup.html",
     "default_icon": {
       "16": "icons/icon-small.png",

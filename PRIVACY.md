@@ -1,142 +1,88 @@
 # Privacy Policy for websocket-tools
 
-**Last Updated: January 2025**
+_Last updated: 2026-05-18_
 
-## Overview
+`websocket-tools` is a Chrome DevTools extension that helps developers inspect
+WebSocket traffic on pages they are debugging. This document explains, in plain
+language, exactly what the extension does and does not do with data.
 
-websocket-tools is a browser extension for Google Chrome and Microsoft Edge designed to help developers monitor, debug, and simulate WebSocket connections. We are committed to protecting your privacy and being transparent about our data practices.
+## TL;DR
 
-## Data Collection and Processing
+- We do **not** collect, transmit, sell, or share any personal data.
+- All captured WebSocket traffic stays **inside your browser**.
+- The extension has **no backend service** of any kind.
+- The only data persisted locally is your own UI settings (e.g. saved filter
+  favorites and language preference), stored via the standard
+  [`chrome.storage`](https://developer.chrome.com/docs/extensions/reference/api/storage)
+  API on your device.
 
-### What We DON'T Collect
-- **No Personal Information**: We do not collect, store, or transmit any personally identifiable information
-- **No Browsing History**: We do not track or record your browsing activity
-- **No External Transmission**: No data is sent to external servers or third parties
-- **No Analytics**: We do not use analytics services or tracking mechanisms
-- **No Cookies**: We do not set or use cookies for tracking purposes
+## What the extension can access
 
-### What We DO Process Locally
-- **WebSocket Traffic**: Intercepts and displays WebSocket messages on pages you choose to debug
-- **Extension Settings**: Stores your preferences (monitoring state, favorites) in local browser storage
-- **Favorite Messages**: Saves WebSocket messages you mark as favorites for reuse
-- **Connection Data**: Temporarily holds WebSocket connection information during debugging sessions
+To do its job, the extension requests the following Chrome permissions:
 
-### Local Storage Only
-All data processing occurs entirely within your browser using browser-specific local storage APIs:
-- **chrome.storage.local** (Chrome) / **browser.storage.local** (Edge): For extension settings and preferences
-- **Browser Local Storage**: For temporary debugging data and favorites
-- **No Cloud Storage**: Nothing is synchronized to external servers
+| Permission | Why it is needed |
+|---|---|
+| `activeTab` | To attach the DevTools panel to the tab you are currently inspecting. |
+| `storage` | To persist your filter favorites, language choice, and other UI preferences locally on your device. |
+| `host_permissions` for `http://*/*` and `https://*/*` | To inject the WebSocket proxy on the page you are debugging so that connection lifecycle events and frames can be displayed inside the DevTools panel. |
 
-## How We Use Your Data
+## What data is processed
 
-### WebSocket Monitoring
-- **Purpose**: To help you debug WebSocket connections on your chosen web pages
-- **Scope**: Only monitors pages where you actively use the DevTools panel
-- **Storage**: Data is temporarily held in memory and local storage during debugging sessions
-- **Retention**: Connection data is cleared when you close DevTools or refresh the page
+When the DevTools panel is open, the extension observes WebSocket connections
+that the inspected page opens, including:
 
-### Favorites System
-- **Purpose**: To save frequently used WebSocket messages for testing
-- **Storage**: Stored locally in your browser using browser storage APIs (chrome.storage.local in Chrome, browser.storage.local in Edge)
-- **Control**: You can view, edit, or delete favorites at any time through the extension interface
+- the connection URL,
+- lifecycle events (open / close / error),
+- the contents of frames sent and received.
 
-### Settings and Preferences
-- **Purpose**: To remember your extension preferences across sessions
-- **Data**: Language preference, monitoring state, window positions
-- **Storage**: Stored locally using browser storage APIs (chrome.storage.local in Chrome, browser.storage.local in Edge)
-- **Control**: You can reset all settings by disabling and re-enabling the extension
+This data is rendered inside the DevTools panel **in memory** for as long as
+the panel is open. It is **not** sent to any remote server, and it is **not**
+written to disk by the extension.
 
-## Permissions and Their Purpose
+If you explicitly click **Export**, a log file is generated and saved via your
+own browser's download flow — the extension itself never uploads anything.
 
-### Required Permissions
-- **activeTab**: 
-  - Purpose: Access the current tab to inject WebSocket monitoring scripts
-  - Scope: Only the tab you're currently debugging
-  - Usage: Enables the extension to monitor WebSocket traffic on the active page
+## What data is stored on your device
 
-- **storage**: 
-  - Purpose: Save your preferences and favorites locally
-  - Scope: Local browser storage only
-  - Usage: Persist settings between browser sessions
+Only the following items are written to `chrome.storage` on your local machine:
 
-### Host Permissions
-- **http://*/*** and **https://*/***: 
-  - Purpose: Inject monitoring scripts into web pages to intercept WebSocket connections
-  - Scope: Only when you open DevTools and use the WebSocket panel
-  - Usage: Required to proxy WebSocket API and capture connection events
+- saved filter favorites (names and filter expressions you created),
+- selected UI language,
+- minor UI preferences (such as panel layout state).
 
-## Data Sharing and Third Parties
+You can clear all of this at any time by removing the extension or by clearing
+extension storage in `chrome://extensions`.
 
-- **No Data Sharing**: We do not share any data with third parties
-- **No External Services**: The extension operates entirely offline within your browser
-- **No Advertising**: We do not serve ads or work with advertising networks
-- **No Monetization**: This is a free tool with no revenue collection
+## What we do NOT do
 
-## Data Security
+- We do not collect analytics, telemetry, crash reports, or usage statistics.
+- We do not include any third-party tracking SDKs.
+- We do not transmit WebSocket payloads, URLs, cookies, credentials, page
+  content, or any other browsing data off your device.
+- We do not sell or transfer user data to third parties.
+- We do not use the data for purposes unrelated to the single purpose of the
+  extension (inspecting WebSocket traffic in DevTools).
+- We do not use the data to determine creditworthiness or for lending purposes.
 
-### Local Security
-- All data remains on your device
-- Uses browser's secure storage APIs (Chrome/Edge)
-- No network transmission of debugging data
-- Extension code is minified and validated by Chrome Web Store and Microsoft Edge Add-ons store
+## Children's privacy
 
-### Access Control
-- Only you can access your debugging data
-- No remote access capabilities
-- Data is tied to your browser profile (Chrome or Edge)
+This extension is a developer tool and is not directed at children under 13.
+We do not knowingly process data from children.
 
-## Your Rights and Control
+## Changes to this policy
 
-### Data Access
-- View all stored favorites through the extension interface
-- Check extension storage usage in browser settings (Chrome/Edge)
-- Export or backup favorites manually if needed
+We may update this policy to reflect changes in the extension's behavior or
+for legal reasons. The "Last updated" date at the top indicates when the
+policy was last modified.
 
-### Data Deletion
-- Clear all data by removing the extension
-- Delete individual favorites through the interface
-- Reset settings using the extension's reset functionality
+## Source code
 
-### Opt-Out
-- Disable monitoring by turning off the extension
-- Uninstall the extension to remove all local data
-- Use incognito mode for temporary debugging without storage
+`websocket-tools` is open source. You can audit the full behavior of the
+extension at:
 
-## Children's Privacy
+<https://github.com/kaka-personal/websocket-tools>
 
-This extension is designed for web developers and is not intended for children under 13. We do not knowingly collect data from children.
+## Contact
 
-## Changes to This Policy
-
-We may update this privacy policy to reflect changes in our practices or for legal reasons. The "Last Updated" date at the top indicates when the policy was last modified.
-
-## Open Source Transparency
-
-websocket-tools is open source. You can review our code at:
-- **GitHub Repository**: Replace this with the URL of your fork before publishing
-- **Code Audit**: All data processing logic is transparent and auditable
-
-## Contact Information
-
-For privacy-related questions or concerns:
-- **Email**: Replace this with your support email before publishing
-- **GitHub Issues**: Replace this with your fork issue tracker before publishing
-- **Project Homepage**: Replace this with your project homepage before publishing
-
-## Browser Compatibility
-
-This extension is compatible with:
-- **Google Chrome**: Available on Chrome Web Store
-- **Microsoft Edge**: Available on Microsoft Edge Add-ons store
-- **Cross-browser Support**: Same privacy standards apply across all supported browsers
-
-## Summary
-
-websocket-tools prioritizes your privacy by:
-- Processing all data locally in your browser (Chrome/Edge)
-- Never transmitting data to external servers
-- Giving you full control over your debugging data
-- Operating transparently as an open-source project
-- Using minimal, necessary permissions only
-
-This extension is built for developers, by developers, with a commitment to privacy and transparency across all supported browsers. 
+For privacy-related questions, please open an issue on the GitHub repository
+linked above.
